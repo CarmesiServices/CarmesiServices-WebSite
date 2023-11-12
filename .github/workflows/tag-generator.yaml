@@ -1,0 +1,47 @@
+name: Generate tag
+
+# Descripción general del flujo del trabajo
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  tagging:
+    name: Generate tag
+    runs-on: ubuntu-latest
+
+    steps:
+      # Paso 1: Verifica el código en el repositorio.
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+          
+      # Paso 2: Incrementa la versión y empuja la etiqueta.
+      - name: Bump version and push tag
+        id: bump_version_and_tag  # Identificador único para referenciar este paso.
+        uses: anothrNick/github-tag-action@1.39.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TAG_GHTOKEN }}
+          RELEASE_BRANCHES: master,release/*
+          DEFAULT_BUMP: patch
+          WITH_V: true
+          
+      # Paso adicional: Imprime la versión generada.
+      - name: Print generated version          
+        run: |
+          echo "Generated version=${{ steps.bump_version_and_tag.outputs.new_tag }}" >> $GITHUB_OUTPUT
+
+
+      # Paso 3: Crea un release en GitHub.
+      - name: Create Release
+        id: create_release  # Identificador único para referenciar este paso.
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TAG_GHTOKEN }} 
+        with:
+          tag_name: ${{ steps.bump_version_and_tag.outputs.new_tag }}
+          release_name: carmesi-services-website ${{ steps.bump_version_and_tag.outputs.new_tag }}
+          draft: false  # Este release no es un borrador.
+          prerelease: false  # Este release no es un prelanzamiento.

@@ -1,0 +1,55 @@
+name: Build and Push Images
+
+# Define la URL del registro de contenedores y el nombre de la imagen como variables
+env:
+  ECR_REGISTRY_URL: 909747108212.dkr.ecr.us-east-1.amazonaws.com
+  PROJECT_NAME: carmesi-services-website
+
+# Controls when the workflow will run
+on:
+  release:
+    types: [published]
+
+jobs:
+  build_and_push:
+    # El tipo de runner que ejecutará el trabajo
+    runs-on: ubuntu-latest
+
+    steps:
+      # Paso 1: Crea un contexto basado en la referencia (tag o rama).
+      - name: Create context
+        id: context
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]
+          then
+            echo "::set-output name=BUILD_TAG::${{ github.ref_name }}"
+          elif [ "${{ github.ref_type }}" = "branch" ]
+          then
+            short_sha=$(echo "${{ github.sha }}" | cut -c1-8)
+            friendly_branch_name=$(echo "${{ github.ref_name }}" | sed -r 's/[\/\\_]+/-/g')
+            echo "::set-output name=BUILD_TAG::$friendly_branch_name-$short_sha"
+          fi
+
+      # Paso 2: Verifica el código en el repositorio.
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          ref: '${{ github.ref }}'
+    
+      # Paso 3: Construye la imagen de la aplicación para producción.
+      - name: Build App Image Production
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.PRODUCTION_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.PRODUCTION_AWS_SECRET_ACCESS_KEY }}
+        run: |
+          docker build -t $PROJECT_NAME:${{ steps.context.outputs.BUILD_TAG }} -f Dockerfile . 
+          docker tag $PROJECT_NAME:${{ steps.context.outputs.BUILD_TAG }} $ECR_REGISTRY_URL/$PROJECT_NAME:${{ steps.context.outputs.BUILD_TAG }}
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY_URL
+          docker push $ECR_REGISTRY_URL/$PROJECT_NAME:${{ steps.context.outputs.BUILD_TAG }}
+
+      # Paso adicional: Imprime el valor de la etiqueta de la imagen.
+      - name: Output Image Tag Value
+        if: github.event.inputs.onlyBuild == 'true'
+        id: image-names
+        run: |
+          echo "TAG_VALUE=${{ steps.context.outputs.BUILD_TAG }}" >> $GITHUB_OUTPUT
