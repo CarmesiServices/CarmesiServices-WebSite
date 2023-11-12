@@ -45,3 +45,40 @@ jobs:
           release_name: carmesi-services-website ${{ steps.bump_version_and_tag.outputs.new_tag }}
           draft: false  # Este release no es un borrador.
           prerelease: false  # Este release no es un prelanzamiento.
+
+# The 'anothrNick/github-tag-action' works by incrementing the last tag it finds in the repository. For its first use, 
+# it requires that there already exists a tag in the correct format (following semver, i.e. vX.Y.Z). If there is no tag, 
+# the action will simply create a tag with 'v' with no associated version.
+#
+# Therefore, you need to manually create the first tag in your repository. You can do this directly on your GitHub interface
+# or from the command line as follows:
+#
+# 1. Clone your repository on your local computer.
+#
+#    git clone https://github.com/username/repository.git
+#
+# 2. Navigate into the repository's directory.
+#
+#    cd repository
+#
+# 3. Create the first tag. Let's start with v1.0.0.
+#
+#    git tag v1.0.0
+#
+# 4. Now, push the tag to the remote repository.
+#
+#    git push origin v1.0.0
+#
+# After you have created the first tag, the action should work as expected and will automatically increment the patch version
+# number with every push to the 'main' branch.
+#
+# 5. Now, you need create new release version.
+#
+# To create this, select to repository project, next, on the section Release, create new release based on "main" branch.
+#
+# As for incrementing major and minor versions, the 'anothrNick/github-tag-action' uses the commit messages to determine if it
+# should increment the major, minor or patch version. By default, if it finds the word "major" in your commit message, it will 
+# increment the major version. Similarly, if it finds the word "minor" in your commit message, it will increment the minor version.
+# If it doesn't find either of these words, it will increment the patch version, which is what you have set in DEFAULT_BUMP: patch.
+#
+# Therefore, if you want to increment the major or minor version, you will need to include the word "major" or "minor" in your commit message.
