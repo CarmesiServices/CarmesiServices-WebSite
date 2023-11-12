@@ -2,7 +2,7 @@ name: Build and Push Images
 
 # Define la URL del registro de contenedores y el nombre de la imagen como variables
 env:
-  ECR_REGISTRY_URL: 909747108212.dkr.ecr.us-east-1.amazonaws.com
+  ECR_REGISTRY_URL: 794766540805.dkr.ecr.us-east-1.amazonaws.com
   PROJECT_NAME: carmesi-services-website
 
 # Controls when the workflow will run

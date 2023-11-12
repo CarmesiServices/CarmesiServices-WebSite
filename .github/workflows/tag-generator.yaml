@@ -1,10 +1,10 @@
 name: Generate tag
 
 # Descripción general del flujo del trabajo - uncomment this section
-#on:
-#  push:
-#    branches:
-#      - master
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   tagging:
