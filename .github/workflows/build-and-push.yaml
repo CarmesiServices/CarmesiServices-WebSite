@@ -49,7 +49,6 @@ jobs:
 
       # Paso adicional: Imprime el valor de la etiqueta de la imagen.
       - name: Output Image Tag Value
-        if: github.event.inputs.onlyBuild == 'true'
         id: image-names
         run: |
           echo "TAG_VALUE=${{ steps.context.outputs.BUILD_TAG }}" >> $GITHUB_OUTPUT
